@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Send Money - PayEasy</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/home.css">
+    <link rel="stylesheet" href="assets/css/transaction.css">
+</head>
+<body>
+    <div class="app-container">
+        <nav class="navbar">
+            <div class="nav-brand">
+                <a href="home.html" style="text-decoration: none; color: inherit; cursor: pointer;">
+                    <h2>💳 PayEasy</h2>
+                </a>
+            </div>
+            
+            <div class="nav-menu">
+                <a href="home.html" class="nav-link">Home</a>
+                <a href="history.html" class="nav-link">History</a>
+                <a href="cards.html" class="nav-link">Cards</a>
+                <a href="profile.html" class="nav-link">Profile</a>
+                <button id="logoutBtn" class="btn-logout">Logout</button>
+            </div>
+        </nav>
+
+        <main class="main-content">
+            <div class="page-header">
+                <a href="home.html" class="back-btn">← Back</a>
+                <h3>Choose Payment Method</h3>
+            </div>
+
+            <div class="transaction-container">
+                <div class="balance-display">
+                    <p>Available Balance</p>
+                    <h2 id="availableBalance">₹0.00</h2>
+                </div>
+
+                <div class="payment-methods-grid">
+                    <a href="pay-upi.html" class="payment-method-card">
+                        <div class="method-icon">💰</div>
+                        <h4>UPI Payment</h4>
+                        <p>Pay to any UPI ID instantly</p>
+                    </a>
+
+                    <a href="pay-phone.html" class="payment-method-card">
+                        <div class="method-icon">📱</div>
+                        <h4>To Phone Number</h4>
+                        <p>Send money to mobile number</p>
+                    </a>
+
+                    <a href="pay-card.html" class="payment-method-card">
+                        <div class="method-icon">💳</div>
+                        <h4>Card Payment</h4>
+                        <p>Pay using saved cards</p>
+                    </a>
+
+                    <a href="pay-bank.html" class="payment-method-card">
+                        <div class="method-icon">🏦</div>
+                        <h4>Bank Transfer</h4>
+                        <p>Transfer to bank account</p>
+                    </a>
+
+                    <a href="pay-qr.html" class="payment-method-card">
+                        <div class="method-icon">📲</div>
+                        <h4>QR Code</h4>
+                        <p>Upload and pay via QR</p>
+                    </a>
+
+                    <a href="javascript:void(0)" onclick="goToSavedCards()" class="payment-method-card">
+                        <div class="method-icon">🗂️</div>
+                        <h4>Saved Cards</h4>
+                        <p>Manage your saved cards</p>
+                    </a>
+                </div>
+
+                <div class="recent-payees-section" id="recentPayeesSection">
+                    <h4>Recent Payees</h4>
+                    <div id="recentPayeesList" class="payees-list">
+                        <p class="no-data">No recent payees</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="assets/js/transaction.js"></script>
+    <script>
+        // Clear payment flow flag when on transaction page
+        sessionStorage.removeItem('fromPaymentFlow');
+        
+        function goToSavedCards() {
+            // Clear payment flag when going to saved cards management
+            sessionStorage.removeItem('fromPaymentFlow');
+            window.location.href = 'cards.html';
+        }
+    </script>
+</body>
+</html>

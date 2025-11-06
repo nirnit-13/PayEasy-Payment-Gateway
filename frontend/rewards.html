@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Rewards - PayEasy</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/home.css">
+    <link rel="stylesheet" href="assets/css/rewards.css">
+    <style>
+        .btn-refresh {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: 600;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+        .btn-refresh:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+        .debug-info {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 10px;
+            margin: 1rem 0;
+            font-size: 0.9rem;
+            color: #666;
+            display: none;
+        }
+        .debug-info.show {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <nav class="navbar">
+            <div class="nav-brand">
+                <a href="home.html" style="text-decoration: none; color: inherit; cursor: pointer;">
+                    <h2>💳 PayEasy</h2>
+                </a>
+            </div>
+            <div class="nav-menu">
+                <a href="home.html" class="nav-link">Home</a>
+                <a href="history.html" class="nav-link">History</a>
+                <a href="cards.html" class="nav-link">Cards</a>
+                <a href="rewards.html" class="nav-link active">Rewards</a>
+                <a href="profile.html" class="nav-link">Profile</a>
+                <button id="logoutBtn" class="btn-logout">Logout</button>
+            </div>
+        </nav>
+
+        <main class="main-content">
+            <div class="page-header">
+                <h3>My Rewards & Coupons 🎁</h3>
+                <button id="refreshBtn" class="btn-refresh">🔄 Refresh</button>
+            </div>
+
+            <div id="debugInfo" class="debug-info"></div>
+
+            <div class="rewards-stats">
+                <div class="stat-box">
+                    <h4 id="totalRewards">0</h4>
+                    <p>Total Rewards</p>
+                </div>
+                <div class="stat-box">
+                    <h4 id="activeRewards">0</h4>
+                    <p>Active Rewards</p>
+                </div>
+            </div>
+
+            <div class="rewards-container">
+                <div id="rewardsList" class="rewards-grid">
+                    <p class="no-data">Loading rewards...</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:8080/api';
+        const userData = JSON.parse(sessionStorage.getItem('userData') || '{}');
+        
+        if (!userData.userId) {
+            window.location.href = 'login.html';
+        }
+
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            sessionStorage.clear();
+            window.location.href = 'index.html';
+        });
+
+        function showDebug(message) {
+            const debugDiv = document.getElementById('debugInfo');
+            debugDiv.innerHTML += message + '<br>';
+            debugDiv.classList.add('show');
+        }
+
+        async function checkBackendHealth() {
+            try {
+                showDebug('🔍 Checking backend connection...');
+                const response = await fetch(`${API_BASE_URL}/wallet/balance/${userData.userId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    mode: 'cors'
+                });
+                showDebug(`✅ Backend is reachable. Status: ${response.status}`);
+                return true;
+            } catch (error) {
+                showDebug(`❌ Backend connection failed: ${error.message}`);
+                return false;
+            }
+        }
+
+        async function loadRewards() {
+            const list = document.getElementById('rewardsList');
+            list.innerHTML = '<p class="no-data">Loading rewards...</p>';
+            
+            try {
+                console.log('=== LOADING REWARDS ===');
+                showDebug('🎁 Fetching rewards...');
+                console.log('User ID:', userData.userId);
+                console.log('API URL:', `${API_BASE_URL}/rewards/all/${userData.userId}`);
+                
+                // Check backend health first
+                const isBackendUp = await checkBackendHealth();
+                if (!isBackendUp) {
+                    throw new Error('Backend server is not responding. Please ensure the Spring Boot application is running on port 8080.');
+                }
+                
+                const response = await fetch(`${API_BASE_URL}/rewards/all/${userData.userId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    mode: 'cors'
+                });
+                
+                console.log('Response status:', response.status);
+                showDebug(`📥 Response status: ${response.status}`);
+                
+                const data = await response.json();
+                console.log('Parsed data:', data);
+                showDebug(`✅ Data received: ${data.count || 0} rewards`);
+
+                if (data.success) {
+                    if (data.rewards && data.rewards.length > 0) {
+                        console.log('Displaying', data.rewards.length, 'rewards');
+                        displayRewards(data.rewards);
+                        updateStats(data.rewards);
+                    } else {
+                        console.log('No rewards found');
+                        displayNoRewards();
+                        updateStats([]);
+                    }
+                } else {
+                    // Even if success is false, check if we have rewards array
+                    if (data.rewards && Array.isArray(data.rewards)) {
+                        if (data.rewards.length > 0) {
+                            displayRewards(data.rewards);
+                            updateStats(data.rewards);
+                        } else {
+                            displayNoRewards();
+                            updateStats([]);
+                        }
+                    } else {
+                        console.error('API returned success=false:', data.message);
+                        list.innerHTML = `<p class="error-text">Error: ${data.message || 'Failed to load rewards'}</p>`;
+                        updateStats([]);
+                    }
+                }
+            } catch (error) {
+                console.error('=== ERROR LOADING REWARDS ===');
+                console.error('Error:', error);
+                console.error('Error stack:', error.stack);
+                
+                let errorMessage = 'Failed to load rewards. ';
+                
+                if (error.message.includes('Failed to fetch')) {
+                    errorMessage += 'Cannot connect to backend server. Please ensure:<br>';
+                    errorMessage += '1. Spring Boot application is running on port 8080<br>';
+                    errorMessage += '2. MySQL database is running<br>';
+                    errorMessage += '3. Check browser console for CORS errors';
+                } else {
+                    errorMessage += error.message;
+                }
+                
+                list.innerHTML = `<p class="error-text">${errorMessage}</p>`;
+                showDebug(`❌ Error: ${error.message}`);
+                updateStats([]);
+            }
+        }
+
+        function displayRewards(rewards) {
+            const list = document.getElementById('rewardsList');
+            
+            if (!rewards || rewards.length === 0) {
+                displayNoRewards();
+                return;
+            }
+
+            list.innerHTML = rewards.map(reward => {
+                try {
+                    const earnedDate = new Date(reward.earnedDate);
+                    const expiryDate = new Date(reward.expiryDate);
+                    
+                    const formattedEarned = earnedDate.toLocaleDateString('en-IN', {
+                        day: '2-digit',
+                        month: 'short',
+                        year: 'numeric'
+                    });
+                    
+                    const formattedExpiry = expiryDate.toLocaleDateString('en-IN', {
+                        day: '2-digit',
+                        month: 'short',
+                        year: 'numeric'
+                    });
+
+                    return `
+                        <div class="reward-card ${reward.isUsed ? 'used' : ''}">
+                            <div class="reward-header">
+                                <div class="reward-icon">🎁</div>
+                                <div class="reward-badge">${reward.isUsed ? 'USED' : 'ACTIVE'}</div>
+                            </div>
+                            
+                            <div class="reward-content">
+                                <h3 class="reward-title">${reward.rewardTitle}</h3>
+                                <p class="reward-description">${reward.rewardDescription}</p>
+                                <div class="reward-discount">${reward.discountPercent}% OFF</div>
+                            </div>
+                            
+                            <div class="coupon-code">
+                                <p class="coupon-label">Coupon Code</p>
+                                <p class="coupon-value">${reward.couponCode}</p>
+                            </div>
+                            
+                            <div class="reward-footer">
+                                <div class="expiry-date">
+                                    <span>⏰</span>
+                                    <span>Expires: ${formattedExpiry}</span>
+                                </div>
+                                ${!reward.isUsed ? 
+                                    `<button class="btn-use-reward" onclick="useReward(${reward.id})">Use Now</button>` 
+                                    : '<span style="color: #fff; opacity: 0.9;">✓ Redeemed</span>'
+                                }
+                            </div>
+                        </div>
+                    `;
+                } catch (err) {
+                    console.error('Error rendering reward:', reward, err);
+                    return '';
+                }
+            }).join('');
+        }
+
+        function displayNoRewards() {
+            const list = document.getElementById('rewardsList');
+            list.innerHTML = `
+                <div class="no-rewards">
+                    <div class="no-rewards-icon">🎁</div>
+                    <h4>No Rewards Yet</h4>
+                    <p>Complete transactions to earn exciting rewards and coupons!</p>
+                    <p style="font-size: 0.9rem; color: #999; margin-top: 0.5rem;">Rewards are generated automatically with 70% chance after each successful transaction.</p>
+                    <a href="transaction.html" class="btn-primary">Make a Payment</a>
+                </div>
+            `;
+        }
+
+        function updateStats(rewards) {
+            try {
+                const total = rewards ? rewards.length : 0;
+                const active = rewards ? rewards.filter(r => !r.isUsed).length : 0;
+                
+                document.getElementById('totalRewards').textContent = total;
+                document.getElementById('activeRewards').textContent = active;
+            } catch (error) {
+                console.error('Error updating stats:', error);
+                document.getElementById('totalRewards').textContent = '0';
+                document.getElementById('activeRewards').textContent = '0';
+            }
+        }
+
+        async function useReward(rewardId) {
+            if (!confirm('Are you sure you want to use this reward?')) {
+                return;
+            }
+            
+            try {
+                console.log('Using reward:', rewardId);
+                const response = await fetch(`${API_BASE_URL}/rewards/use/${rewardId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    mode: 'cors'
+                });
+                
+                const data = await response.json();
+                console.log('Use reward response:', data);
+                
+                if (data.success) {
+                    alert('Reward used successfully!');
+                    loadRewards();
+                } else {
+                    alert(data.message || 'Failed to use reward');
+                }
+            } catch (error) {
+                console.error('Error using reward:', error);
+                alert('Failed to use reward. Please try again.');
+            }
+        }
+
+        // Make useReward function globally accessible
+        window.useReward = useReward;
+
+        document.getElementById('refreshBtn').addEventListener('click', () => {
+            console.log('Refresh button clicked');
+            document.getElementById('debugInfo').innerHTML = '';
+            loadRewards();
+        });
+
+        console.log('Page loaded, calling loadRewards...');
+        loadRewards();
+    </script>
+</body>
+</html>

@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transaction History - PayEasy</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/home.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        .btn-refresh {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: 600;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+        .btn-refresh:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+        .cashback-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-top: 0.3rem;
+        }
+        .transaction-item {
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        .transaction-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .btn-download-pdf {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        .btn-download-pdf:hover {
+            background: #c82333;
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <nav class="navbar">
+            <div class="nav-brand">
+                <a href="home.html" style="text-decoration: none; color: inherit;">
+                    <h2>💳 PayEasy</h2>
+                </a>
+            </div>
+            <div class="nav-menu">
+                <a href="home.html" class="nav-link">Home</a>
+                <a href="history.html" class="nav-link active">History</a>
+                <a href="cards.html" class="nav-link">Cards</a>
+                <a href="profile.html" class="nav-link">Profile</a>
+                <button id="logoutBtn" class="btn-logout">Logout</button>
+            </div>
+        </nav>
+
+        <main class="main-content">
+            <div class="page-header">
+                <h3>💰 Transaction History & Cashback</h3>
+                <button id="refreshBtn" class="btn-refresh">🔄 Refresh</button>
+            </div>
+
+            <div class="filter-section">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <p>Total Transactions</p>
+                        <h3 id="totalCount">0</h3>
+                    </div>
+                    <div class="stat-card">
+                        <p>Total Spent</p>
+                        <h3 id="totalSpent">₹0.00</h3>
+                    </div>
+                    <div class="stat-card">
+                        <p>Total Cashback Earned 🎉</p>
+                        <h3 id="totalCashback" style="color: #28a745;">₹0.00</h3>
+                    </div>
+                </div>
+            </div>
+
+            <div class="transactions-container">
+                <div id="transactionsList" class="transaction-list">
+                    <p class="no-data">Loading transactions...</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:8080/api';
+        const userData = JSON.parse(sessionStorage.getItem('userData') || '{}');
+        
+        if (!userData.userId) {
+            console.error('❌ No user ID found, redirecting to login');
+            window.location.href = 'login.html';
+        }
+
+        console.log('✓ User Data:', userData);
+
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            sessionStorage.clear();
+            window.location.href = 'index.html';
+        });
+
+        async function loadTransactions() {
+            const list = document.getElementById('transactionsList');
+            list.innerHTML = '<p class="no-data">⏳ Loading transactions...</p>';
+            
+            try {
+                console.log('==========================================');
+                console.log('LOADING TRANSACTIONS');
+                console.log('User ID:', userData.userId);
+                console.log('API URL:', `${API_BASE_URL}/transactions/history/${userData.userId}`);
+                console.log('==========================================');
+                
+                const response = await fetch(`${API_BASE_URL}/transactions/history/${userData.userId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    }
+                });
+                
+                console.log('✓ Response status:', response.status);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                console.log('✓ Response data:', data);
+
+                if (data.success && data.transactions && data.transactions.length > 0) {
+                    console.log('✅ Found', data.transactions.length, 'transactions');
+                    displayTransactions(data.transactions);
+                    calculateStats(data.transactions);
+                } else {
+                    console.log('ℹ️ No transactions found');
+                    list.innerHTML = '<p class="no-data">📭 No transactions yet. Make your first payment!</p>';
+                    calculateStats([]);
+                }
+            } catch (error) {
+                console.error('==========================================');
+                console.error('ERROR LOADING TRANSACTIONS');
+                console.error('Error:', error);
+                console.error('==========================================');
+                
+                let errorHTML = '<div style="padding: 2rem; text-align: center;">';
+                errorHTML += '<h3 style="color: #dc3545; margin-bottom: 1rem;">❌ Failed to Load Transactions</h3>';
+                errorHTML += '<p>Please check:</p>';
+                errorHTML += '<ol style="text-align: left; max-width: 500px; margin: 1rem auto;">';
+                errorHTML += '<li>Backend is running on port 8080</li>';
+                errorHTML += '<li>MySQL database is accessible</li>';
+                errorHTML += '<li>Check backend console for errors</li>';
+                errorHTML += '</ol>';
+                errorHTML += '<button onclick="location.reload()" style="margin-top: 1rem; padding: 0.8rem 2rem; background: #667eea; color: white; border: none; border-radius: 10px; cursor: pointer; font-size: 1rem;">🔄 Retry</button>';
+                errorHTML += '</div>';
+                
+                list.innerHTML = errorHTML;
+                calculateStats([]);
+            }
+        }
+
+        function displayTransactions(transactions) {
+            const list = document.getElementById('transactionsList');
+            
+            if (!transactions || transactions.length === 0) {
+                list.innerHTML = '<p class="no-data">📭 No transactions yet. Make your first payment!</p>';
+                return;
+            }
+            
+            list.innerHTML = transactions.map(txn => {
+                try {
+                    const date = new Date(txn.transactionDate);
+                    const formattedDate = date.toLocaleDateString('en-IN', {
+                        day: '2-digit',
+                        month: 'short',
+                        year: 'numeric'
+                    });
+                    const formattedTime = date.toLocaleTimeString('en-IN', {
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+
+                    const cashbackAmount = parseFloat(txn.cashback || 0);
+                    const cashbackPercent = ((cashbackAmount / parseFloat(txn.amount)) * 100).toFixed(1);
+
+                    return `
+                        <div class="transaction-item">
+                            <button class="btn-download-pdf" onclick="downloadTransactionPDF(${JSON.stringify(txn).replace(/"/g, '&quot;')})">
+                                📄 Download PDF
+                            </button>
+                            <div class="txn-icon">💸</div>
+                            <div class="txn-details">
+                                <h5>${txn.recipientName || 'Unknown'}</h5>
+                                <p>${txn.recipientUPI || 'N/A'}</p>
+                                <p style="font-size: 0.85rem; color: #667eea; font-weight: 600;">
+                                    via ${txn.paymentMethod || 'UPI'}
+                                </p>
+                                <p class="txn-date">${formattedDate} at ${formattedTime}</p>
+                                ${txn.description ? `<p style="font-size: 0.8rem; color: #999;">${txn.description}</p>` : ''}
+                            </div>
+                            <div class="txn-amount">
+                                <p class="amount-paid">-₹${parseFloat(txn.amount || 0).toFixed(2)}</p>
+                                <div class="cashback-badge">
+                                    🎁 +₹${cashbackAmount.toFixed(2)} (${cashbackPercent}%)
+                                </div>
+                                <p class="txn-id" style="margin-top: 0.5rem;">${txn.transactionId || 'N/A'}</p>
+                                <p style="font-size: 0.8rem; color: #28a745; background: #d4edda; padding: 0.2rem 0.5rem; border-radius: 5px; display: inline-block; margin-top: 0.3rem;">
+                                    ✓ ${txn.status || 'SUCCESS'}
+                                </p>
+                            </div>
+                        </div>
+                    `;
+                } catch (err) {
+                    console.error('Error rendering transaction:', txn, err);
+                    return '';
+                }
+            }).join('');
+        }
+
+        function calculateStats(transactions) {
+            try {
+                const total = transactions ? transactions.length : 0;
+                const totalSpent = transactions ? transactions.reduce((sum, txn) => sum + parseFloat(txn.amount || 0), 0) : 0;
+                const totalCashback = transactions ? transactions.reduce((sum, txn) => sum + parseFloat(txn.cashback || 0), 0) : 0;
+
+                document.getElementById('totalCount').textContent = total;
+                document.getElementById('totalSpent').textContent = '₹' + totalSpent.toFixed(2);
+                document.getElementById('totalCashback').textContent = '₹' + totalCashback.toFixed(2);
+            } catch (error) {
+                console.error('Error calculating stats:', error);
+                document.getElementById('totalCount').textContent = '0';
+                document.getElementById('totalSpent').textContent = '₹0.00';
+                document.getElementById('totalCashback').textContent = '₹0.00';
+            }
+        }
+
+        // PDF Download Function
+        window.downloadTransactionPDF = function(txn) {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            // Header
+            doc.setFillColor(102, 126, 234);
+            doc.rect(0, 0, 210, 40, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(24);
+            doc.setFont('helvetica', 'bold');
+            doc.text('PayEasy', 105, 20, { align: 'center' });
+            doc.setFontSize(12);
+            doc.text('Transaction Receipt', 105, 30, { align: 'center' });
+
+            // Reset text color
+            doc.setTextColor(0, 0, 0);
+
+            // Transaction Status
+            doc.setFontSize(16);
+            doc.setFont('helvetica', 'bold');
+            doc.text('✓ Transaction Successful', 105, 55, { align: 'center' });
+
+            // Transaction Details
+            doc.setFontSize(12);
+            doc.setFont('helvetica', 'normal');
+            
+            let y = 75;
+            const lineHeight = 10;
+
+            // Transaction ID
+            doc.setFont('helvetica', 'bold');
+            doc.text('Transaction ID:', 20, y);
+            doc.setFont('helvetica', 'normal');
+            doc.text(txn.transactionId || 'N/A', 70, y);
+            y += lineHeight;
+
+            // Date & Time
+            const date = new Date(txn.transactionDate);
+            const formattedDateTime = date.toLocaleString('en-IN');
+            doc.setFont('helvetica', 'bold');
+            doc.text('Date & Time:', 20, y);
+            doc.setFont('helvetica', 'normal');
+            doc.text(formattedDateTime, 70, y);
+            y += lineHeight * 1.5;
+
+            // Separator line
+            doc.setDrawColor(200, 200, 200);
+            doc.line(20, y, 190, y);
+            y += lineHeight;
+
+            // Payment Details
+            doc.setFont('helvetica', 'bold');
+            doc.text('Recipient Name:', 20, y);
+            doc.setFont('helvetica', 'normal');
+            doc.text(txn.recipientName || 'Unknown', 70, y);
+            y += lineHeight;
+
+            doc.setFont('helvetica', 'bold');
+            doc.text('Recipient UPI:', 20, y);
+            doc.setFont('helvetica', 'normal');
+            doc.text(txn.recipientUPI || 'N/A', 70, y);
+            y += lineHeight;
+
+            doc.setFont('helvetica', 'bold');
+            doc.text('Payment Method:', 20, y);
+            doc.setFont('helvetica', 'normal');
+            doc.text(txn.paymentMethod || 'UPI', 70, y);
+            y += lineHeight;
+
+            if (txn.description) {
+                doc.setFont('helvetica', 'bold');
+                doc.text('Description:', 20, y);
+                doc.setFont('helvetica', 'normal');
+                doc.text(txn.description, 70, y);
+                y += lineHeight;
+            }
+
+            y += lineHeight * 0.5;
+            doc.line(20, y, 190, y);
+            y += lineHeight;
+
+            // Amount Details
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(14);
+            doc.text('Amount Paid:', 20, y);
+            doc.setTextColor(220, 53, 69);
+            doc.text('₹' + parseFloat(txn.amount || 0).toFixed(2), 150, y);
+            doc.setTextColor(0, 0, 0);
+            y += lineHeight;
+
+            doc.setFont('helvetica', 'bold');
+            doc.text('Cashback Earned:', 20, y);
+            doc.setTextColor(40, 167, 69);
+            const cashbackAmount = parseFloat(txn.cashback || 0);
+            const cashbackPercent = ((cashbackAmount / parseFloat(txn.amount)) * 100).toFixed(1);
+            doc.text('₹' + cashbackAmount.toFixed(2) + ' (' + cashbackPercent + '%)', 150, y);
+            doc.setTextColor(0, 0, 0);
+            y += lineHeight * 1.5;
+
+            // Net Amount
+            doc.line(20, y, 190, y);
+            y += lineHeight;
+            doc.setFontSize(16);
+            doc.setFont('helvetica', 'bold');
+            doc.text('Net Amount:', 20, y);
+            const netAmount = parseFloat(txn.amount) - parseFloat(txn.cashback);
+            doc.text('₹' + netAmount.toFixed(2), 150, y);
+            y += lineHeight * 2;
+
+            // Status
+            doc.setFontSize(12);
+            doc.setTextColor(40, 167, 69);
+            doc.setFont('helvetica', 'bold');
+            doc.text('Status: ' + (txn.status || 'SUCCESS'), 105, y, { align: 'center' });
+            y += lineHeight * 2;
+
+            // Footer
+            doc.setFontSize(10);
+            doc.setTextColor(100, 100, 100);
+            doc.setFont('helvetica', 'normal');
+            doc.text('This is a computer-generated receipt and does not require a signature.', 105, y, { align: 'center' });
+            y += 5;
+            doc.text('For any queries, please contact support@payeasy.com', 105, y, { align: 'center' });
+            y += 5;
+            doc.text('Thank you for using PayEasy!', 105, y, { align: 'center' });
+
+            // Footer Box
+            doc.setFillColor(102, 126, 234);
+            doc.rect(0, 280, 210, 17, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(10);
+            doc.text('💳 PayEasy - Your Trusted Payment Gateway', 105, 290, { align: 'center' });
+
+            // Save PDF
+            doc.save(`PayEasy_Receipt_${txn.transactionId}.pdf`);
+        };
+
+        document.getElementById('refreshBtn').addEventListener('click', () => {
+            console.log('🔄 Refresh button clicked');
+            loadTransactions();
+        });
+
+        console.log('📄 Page loaded, loading transactions...');
+        loadTransactions();
+    </script>
+</body>
+</html>

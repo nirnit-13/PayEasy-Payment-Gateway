@@ -1,0 +1,469 @@
+/* Transaction Page Styles */
+.transaction-container {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.payment-methods-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin: 2rem 0;
+}
+
+.payment-method-card {
+    background: white;
+    padding: 2rem;
+    border-radius: 15px;
+    text-align: center;
+    text-decoration: none;
+    color: #333;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s;
+    border: 2px solid transparent;
+}
+
+.payment-method-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+    border-color: #667eea;
+}
+
+.method-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+
+.payment-method-card h4 {
+    color: #667eea;
+    margin-bottom: 0.5rem;
+    font-size: 1.3rem;
+}
+
+.payment-method-card p {
+    color: #666;
+    font-size: 0.95rem;
+}
+
+.recent-payees-section {
+    margin-top: 3rem;
+    background: white;
+    padding: 2rem;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.recent-payees-section h4 {
+    margin-bottom: 1.5rem;
+    color: #333;
+}
+
+.payees-list {
+    display: grid;
+    gap: 1rem;
+}
+
+.payee-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.payee-item:hover {
+    background: #e9ecef;
+}
+
+.payee-avatar {
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+.payee-details {
+    flex: 1;
+}
+
+.payee-details h5 {
+    margin-bottom: 0.3rem;
+    color: #333;
+}
+
+.payee-details p {
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+}
+
+.qr-upload-section {
+    background: white;
+    padding: 2rem;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+.qr-upload-box {
+    margin: 1.5rem 0;
+}
+
+.btn-upload {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 1rem 2rem;
+    border: none;
+    border-radius: 10px;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: transform 0.3s;
+}
+
+.btn-upload:hover {
+    transform: translateY(-2px);
+}
+
+.qr-hint {
+    color: #666;
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.qr-preview {
+    margin-top: 1rem;
+}
+
+.qr-preview img {
+    max-width: 300px;
+    border-radius: 10px;
+}
+
+.balance-display {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 2rem;
+    border-radius: 15px;
+    text-align: center;
+    margin-bottom: 2rem;
+    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+}
+
+.balance-display p {
+    font-size: 1rem;
+    opacity: 0.9;
+    margin-bottom: 0.5rem;
+}
+
+.balance-display h2 {
+    font-size: 2.5rem;
+    font-weight: bold;
+}
+
+/* Payment Form */
+.payment-form {
+    background: white;
+    padding: 2rem;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.payment-form .form-group {
+    margin-bottom: 1.5rem;
+}
+
+.payment-form label {
+    display: block;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 0.5rem;
+}
+
+.payment-form input {
+    width: 100%;
+    padding: 1rem;
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    font-size: 1rem;
+    transition: border-color 0.3s;
+}
+
+.payment-form input:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+/* Swipe to Pay */
+.swipe-container {
+    position: relative;
+    background: #f0f0f0;
+    border-radius: 50px;
+    height: 60px;
+    margin-top: 2rem;
+    overflow: hidden;
+    cursor: pointer;
+    user-select: none;
+}
+
+.swipe-text {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #667eea;
+    font-weight: 600;
+    font-size: 1.1rem;
+    pointer-events: none;
+}
+
+.swipe-button {
+    position: absolute;
+    left: 5px;
+    top: 5px;
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    cursor: grab;
+    transition: left 0.1s;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.swipe-button:active {
+    cursor: grabbing;
+}
+
+.swipe-container.completed {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+}
+
+.swipe-container.completed .swipe-text {
+    color: white;
+}
+
+/* Payment Info */
+.payment-info {
+    margin-top: 2rem;
+    padding: 1.5rem;
+    background: #f8f9fa;
+    border-radius: 10px;
+}
+
+.payment-info p {
+    color: #28a745;
+    margin: 0.5rem 0;
+    font-weight: 500;
+}
+
+/* Success Page */
+.success-container {
+    max-width: 600px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.success-icon {
+    width: 100px;
+    height: 100px;
+    background: #28a745;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 4rem;
+    margin: 0 auto 2rem;
+    animation: scaleIn 0.5s ease-out;
+}
+
+@keyframes scaleIn {
+    0% {
+        transform: scale(0);
+    }
+    50% {
+        transform: scale(1.1);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+.success-container h2 {
+    font-size: 2.5rem;
+    color: #28a745;
+    margin-bottom: 1rem;
+}
+
+.success-message {
+    font-size: 1.2rem;
+    color: #666;
+    margin-bottom: 2rem;
+}
+
+/* Transaction Details */
+.transaction-details {
+    background: white;
+    padding: 2rem;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    margin-bottom: 2rem;
+    text-align: left;
+}
+
+.transaction-details h4 {
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+    color: #333;
+    text-align: center;
+}
+
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 1rem 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.detail-row:last-child {
+    border-bottom: none;
+}
+
+.detail-row span:first-child {
+    color: #666;
+}
+
+.detail-row .bold {
+    font-weight: 600;
+    color: #333;
+}
+
+.detail-row .amount {
+    color: #667eea;
+    font-size: 1.1rem;
+}
+
+.detail-row.success .amount {
+    color: #28a745;
+}
+
+/* Reward Notification */
+.reward-notification {
+    background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
+    color: white;
+    padding: 2rem;
+    border-radius: 15px;
+    margin-bottom: 2rem;
+    text-align: center;
+    animation: slideUp 0.5s ease-out 0.5s both;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.reward-notification h4 {
+    font-size: 1.8rem;
+    margin-bottom: 0.5rem;
+}
+
+.reward-notification p {
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+}
+
+.reward-notification .btn-primary {
+    background: white;
+    color: #ff9800;
+    padding: 0.8rem 2rem;
+    border-radius: 25px;
+    text-decoration: none;
+    display: inline-block;
+    font-weight: 600;
+    transition: transform 0.3s;
+}
+
+.reward-notification .btn-primary:hover {
+    transform: scale(1.05);
+}
+
+/* Action Buttons */
+.action-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.action-buttons .btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 1rem 2rem;
+    border-radius: 25px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: transform 0.3s;
+}
+
+.action-buttons .btn-secondary {
+    background: white;
+    color: #667eea;
+    border: 2px solid #667eea;
+    padding: 1rem 2rem;
+    border-radius: 25px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: transform 0.3s;
+}
+
+.action-buttons .btn-primary:hover,
+.action-buttons .btn-secondary:hover {
+    transform: translateY(-3px);
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+    .balance-display h2 {
+        font-size: 2rem;
+    }
+    
+    .payment-form {
+        padding: 1.5rem;
+    }
+    
+    .swipe-container {
+        height: 50px;
+    }
+    
+    .swipe-button {
+        width: 40px;
+        height: 40px;
+    }
+}

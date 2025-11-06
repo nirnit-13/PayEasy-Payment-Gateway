@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Successful - PayEasy</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/transaction.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <nav class="navbar">
+            <div class="nav-brand">
+                <a href="home.html" style="text-decoration: none; color: inherit; cursor: pointer;">
+                    <h2>💳 PayEasy</h2>
+                </a>
+            </div>
+
+            <div class="nav-menu">
+                <a href="home.html" class="nav-link">Home</a>
+                <a href="history.html" class="nav-link">History</a>
+                <a href="cards.html" class="nav-link">Cards</a>
+                <a href="profile.html" class="nav-link">Profile</a>
+            </div>
+        </nav>
+
+        <main class="main-content">
+            <div class="success-container">
+                <div class="success-icon">✓</div>
+                <h2>Payment Successful!</h2>
+                <p class="success-message">Your money has been sent successfully</p>
+
+                <div class="transaction-details">
+                    <h4>Transaction Details</h4>
+                    <div class="detail-row">
+                        <span>Transaction ID:</span>
+                        <span id="txnId" class="bold">--</span>
+                    </div>
+                    <div class="detail-row">
+                        <span>Recipient:</span>
+                        <span id="recipient" class="bold">--</span>
+                    </div>
+                    <div class="detail-row">
+                        <span>Amount Paid:</span>
+                        <span id="paidAmount" class="bold amount">--</span>
+                    </div>
+                    <div class="detail-row success">
+                        <span>Cashback Earned:</span>
+                        <span id="cashbackEarned" class="bold amount">--</span>
+                    </div>
+                    <div class="detail-row">
+                        <span>Date & Time:</span>
+                        <span id="txnDate" class="bold">--</span>
+                    </div>
+                </div>
+
+                <div class="cashback-notification" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%); color: white; padding: 2rem; border-radius: 15px; margin-bottom: 2rem; text-align: center;">
+                    <h4 style="font-size: 1.8rem; margin-bottom: 0.5rem;">🎉 Congratulations!</h4>
+                    <p style="font-size: 1.1rem; margin-bottom: 1rem;">You've earned cashback on this transaction!</p>
+                    <p style="font-size: 0.9rem; opacity: 0.9;">Check your transaction history to see all your cashback rewards</p>
+                </div>
+
+                <div class="action-buttons">
+                    <button onclick="downloadReceipt()" class="btn-primary" style="background: #dc3545;">📄 Download Receipt</button>
+                    <a href="home.html" class="btn-primary">Back to Home</a>
+                    <a href="history.html" class="btn-secondary">View History</a>
+                    <a href="transaction.html" class="btn-secondary">Send Again</a>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        let transactionData = null;
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const txnData = JSON.parse(sessionStorage.getItem('lastTransaction') || '{}');
+            transactionData = txnData;
+            
+            if (txnData.transactionId) {
+                document.getElementById('txnId').textContent = txnData.transactionId;
+                document.getElementById('recipient').textContent = txnData.recipientName || '--';
+                document.getElementById('paidAmount').textContent = '₹' + (txnData.amount || '0.00');
+                document.getElementById('cashbackEarned').textContent = '₹' + (txnData.cashback || '0.00');
+                
+                const date = new Date(txnData.transactionDate || Date.now());
+                document.getElementById('txnDate').textContent = date.toLocaleString('en-IN');
+            } else {
+                setTimeout(() => window.location.href = 'home.html', 2000);
+            }
+        });
+
+        function downloadReceipt() {
+            if (!transactionData || !transactionData.transactionId) {
+                alert('Transaction data not available');
+                return;
+            }
+
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            const txn = transactionData;
+
+            // Header
+            doc.setFillColor(102, 126, 234);
+            doc.rect(0, 0, 210, 40, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(24);
+            doc.setFont('helvetica', 'bold');
+            doc.text('PayEasy', 105, 20, { align: 'center' });
+            doc.setFontSize(12);
+            doc.text('Payment Receipt', 105, 30, { align: 'center' });
+
+            // Reset text color
+            doc.setTextColor(0, 0, 0);
+
+            // Success Status
+            doc.setFontSize(18);
+            doc.setFont('helvetica', 'bold');
+            doc.setTextColor(40, 167, 69);
+            doc.text('✓ Payment Successful!', 105, 55, { align: 'center' });
+            doc.setTextColor(0, 0, 0);
+
+            // Transaction Details
+            doc.setFontSize(12);
+            doc.setFont('helvetica', 'normal');
+            
+            let y = 75;
+            const lineHeight = 10;
+
+            // Transaction ID
+            doc.setFont('helvetica', 'bold');
+            doc.text('Transaction ID:', 20, y);
+            doc.setFont('helvetica', 'normal');
+            doc.text(txn.transactionId || 'N/A', 70, y);
+            y += lineHeight;
+
+            // Date & Time
+            const date = new Date(txn.transactionDate);
+            const formattedDateTime = date.toLocaleString('en-IN');
+            doc.setFont('helvetica', 'bold');
+            doc.text('Date & Time:', 20, y);
+            doc.setFont('helvetica', 'normal');
+            doc.text(formattedDateTime, 70, y);
+            y += lineHeight * 1.5;
+
+            // Separator line
+            doc.setDrawColor(200, 200, 200);
+            doc.line(20, y, 190, y);
+            y += lineHeight;
+
+            // Payment Details
+            doc.setFont('helvetica', 'bold');
+            doc.text('Recipient Name:', 20, y);
+            doc.setFont('helvetica', 'normal');
+            doc.text(txn.recipientName || 'Unknown', 70, y);
+            y += lineHeight;
+
+            doc.setFont('helvetica', 'bold');
+            doc.text('Payment Method:', 20, y);
+            doc.setFont('helvetica', 'normal');
+            doc.text(txn.paymentMethod || 'UPI', 70, y);
+            y += lineHeight;
+
+            doc.setFont('helvetica', 'bold');
+            doc.text('Status:', 20, y);
+            doc.setTextColor(40, 167, 69);
+            doc.text(txn.status || 'SUCCESS', 70, y);
+            doc.setTextColor(0, 0, 0);
+            y += lineHeight * 1.5;
+
+            // Amount Details
+            doc.line(20, y, 190, y);
+            y += lineHeight;
+
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(14);
+            doc.text('Amount Paid:', 20, y);
+            doc.setTextColor(220, 53, 69);
+            doc.text('₹' + parseFloat(txn.amount || 0).toFixed(2), 150, y);
+            doc.setTextColor(0, 0, 0);
+            y += lineHeight;
+
+            doc.setFont('helvetica', 'bold');
+            doc.text('Cashback Earned:', 20, y);
+            doc.setTextColor(40, 167, 69);
+            const cashbackAmount = parseFloat(txn.cashback || 0);
+            const cashbackPercent = ((cashbackAmount / parseFloat(txn.amount)) * 100).toFixed(1);
+            doc.text('₹' + cashbackAmount.toFixed(2) + ' (' + cashbackPercent + '%)', 150, y);
+            doc.setTextColor(0, 0, 0);
+            y += lineHeight * 1.5;
+
+            // Net Amount
+            doc.line(20, y, 190, y);
+            y += lineHeight;
+            doc.setFontSize(16);
+            doc.setFont('helvetica', 'bold');
+            doc.text('Net Amount:', 20, y);
+            const netAmount = parseFloat(txn.amount) - parseFloat(txn.cashback);
+            doc.text('₹' + netAmount.toFixed(2), 150, y);
+            y += lineHeight * 2;
+
+            // Cashback Message
+            doc.setFontSize(12);
+            doc.setTextColor(40, 167, 69);
+            doc.setFont('helvetica', 'bold');
+            doc.text('🎉 Congratulations! You earned ₹' + cashbackAmount.toFixed(2) + ' cashback!', 105, y, { align: 'center' });
+            y += lineHeight * 2;
+
+            // Footer
+            doc.setFontSize(10);
+            doc.setTextColor(100, 100, 100);
+            doc.setFont('helvetica', 'normal');
+            doc.text('This is a computer-generated receipt and does not require a signature.', 105, y, { align: 'center' });
+            y += 5;
+            doc.text('For any queries, please contact support@payeasy.com', 105, y, { align: 'center' });
+            y += 5;
+            doc.text('Thank you for using PayEasy!', 105, y, { align: 'center' });
+
+            // Footer Box
+            doc.setFillColor(102, 126, 234);
+            doc.rect(0, 280, 210, 17, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(10);
+            doc.text('💳 PayEasy - Your Trusted Payment Gateway', 105, 290, { align: 'center' });
+
+            // Save PDF
+            doc.save(`PayEasy_Receipt_${txn.transactionId}.pdf`);
+        }
+    </script>
+</body>
+</html>

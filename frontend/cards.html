@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Saved Cards - PayEasy</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/home.css">
+    <link rel="stylesheet" href="assets/css/cards.css">
+</head>
+<body>
+    <div class="app-container">
+        <nav class="navbar">
+            <div class="nav-brand">
+                <a href="home.html" style="text-decoration: none; color: inherit; cursor: pointer;">
+                    <h2>💳 PayEasy</h2>
+                </a>
+            </div>
+            <div class="nav-menu">
+                <a href="home.html" class="nav-link">Home</a>
+                <a href="history.html" class="nav-link">History</a>
+                <a href="cards.html" class="nav-link active">Cards</a>
+                <a href="profile.html" class="nav-link">Profile</a>
+                <button id="logoutBtn" class="btn-logout">Logout</button>
+            </div>
+        </nav>
+
+        <main class="main-content">
+            <div class="page-header">
+                <div>
+                    <a href="home.html" class="back-btn">← Back</a>
+                    <h3 style="display: inline-block; margin-left: 1rem;">💳 Saved Cards</h3>
+                </div>
+                <button id="addCardBtn" class="btn-primary">+ Add New Card</button>
+            </div>
+
+            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 1.5rem; border-radius: 15px; margin-bottom: 2rem;">
+                <h4 style="color: white; margin-bottom: 0.5rem;">💡 How to Use</h4>
+                <p style="margin: 0; opacity: 0.9;">Click on any card to view options. You can make payments or delete cards from the menu.</p>
+            </div>
+
+            <div id="cardsContainer" class="cards-grid">
+                <p class="no-data">Loading cards...</p>
+            </div>
+
+            <!-- Card Action Popup -->
+            <div id="cardActionPopup" class="card-action-popup">
+                <div class="card-action-content">
+                    <span class="popup-close" onclick="closeCardActionPopup()">&times;</span>
+                    <h3>Card Actions</h3>
+                    
+                    <div class="card-action-preview" id="actionCardPreview">
+                        <p><strong id="actionCardBrand">VISA</strong></p>
+                        <p class="preview-number">**** **** **** <span id="actionCardNumber">1234</span></p>
+                        <p id="actionCardHolder">Cardholder Name</p>
+                    </div>
+                    
+                    <div class="card-action-buttons">
+                        <button class="btn-action btn-action-pay" onclick="payWithSelectedCard()">
+                            💳 Pay with this Card
+                        </button>
+                        <button class="btn-action btn-action-delete" onclick="deleteSelectedCard()">
+                            🗑️ Delete Card
+                        </button>
+                        <button class="btn-action btn-action-cancel" onclick="closeCardActionPopup()">
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Add Card Modal -->
+            <div id="addCardModal" class="modal hidden">
+                <div class="modal-content">
+                    <span class="close">&times;</span>
+                    <h3>Add New Card</h3>
+                    <form id="addCardForm" autocomplete="off">
+                        <div class="form-group">
+                            <label>Cardholder Name</label>
+                            <input type="text" id="cardHolderName" autocomplete="off" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Card Number (16 digits)</label>
+                            <input type="text" id="cardNumber" maxlength="16" minlength="16" placeholder="1234567890123456" autocomplete="off" pattern="[0-9]{16}" required>
+                            <small style="color: #666; font-size: 0.85rem;">Must be exactly 16 digits</small>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Expiry Month</label>
+                                <input type="text" id="expiryMonth" maxlength="2" placeholder="MM" autocomplete="off" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Expiry Year</label>
+                                <input type="text" id="expiryYear" maxlength="2" placeholder="YY" autocomplete="off" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Card Type</label>
+                            <select id="cardType" required>
+                                <option value="CREDIT">Credit Card</option>
+                                <option value="DEBIT">Debit Card</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Card Brand</label>
+                            <select id="cardBrand" required>
+                                <option value="VISA">Visa</option>
+                                <option value="MASTERCARD">Mastercard</option>
+                                <option value="RUPAY">RuPay</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn-submit">Save Card</button>
+                    </form>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="assets/js/cards.js"></script>
+</body>
+</html>

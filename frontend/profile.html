@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - PayEasy</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/home.css">
+</head>
+<body>
+    <div class="app-container">
+        <nav class="navbar">
+            <div class="nav-brand">
+                <a href="home.html" style="text-decoration: none; color: inherit; cursor: pointer;">
+                    <h2>💳 PayEasy</h2>
+                </a>
+            </div>
+            <div class="nav-menu">
+                <a href="home.html" class="nav-link">Home</a>
+                <a href="history.html" class="nav-link">History</a>
+                <a href="cards.html" class="nav-link">Cards</a>
+                <a href="profile.html" class="nav-link active">Profile</a>
+                <button id="logoutBtn" class="btn-logout">Logout</button>
+            </div>
+        </nav>
+
+        <main class="main-content">
+            <div class="page-header">
+                <h3>My Profile</h3>
+            </div>
+
+            <div class="profile-container">
+                <div class="profile-card">
+                    <div class="profile-avatar">
+                        <div class="avatar-circle">
+                            <span id="avatarInitial">U</span>
+                        </div>
+                    </div>
+
+                    <div class="profile-info">
+                        <div class="info-row">
+                            <label>Full Name</label>
+                            <p id="profileName">--</p>
+                        </div>
+                        <div class="info-row">
+                            <label>Email Address</label>
+                            <p id="profileEmail">--</p>
+                        </div>
+                        <div class="info-row">
+                            <label>Phone Number</label>
+                            <p id="profilePhone">--</p>
+                        </div>
+                        <div class="info-row">
+                            <label>Member Since</label>
+                            <p id="profileCreated">--</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="wallet-summary">
+                    <h4>Wallet Summary</h4>
+                    <div class="summary-grid">
+                        <div class="summary-item">
+                            <p>Current Balance</p>
+                            <h3 id="summaryBalance">₹0.00</h3>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="qr-section" style="background: white; padding: 2rem; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); margin-top: 2rem; text-align: center;">
+                    <h4 style="margin-bottom: 1.5rem; color: #333;">My Payment QR Code</h4>
+                    <div id="qrCodeContainer" style="margin: 1.5rem auto; min-height: 270px; display: flex; align-items: center; justify-content: center;">
+                        <p style="color: #667eea;">Loading QR Code...</p>
+                    </div>
+                    <p style="color: #666; font-size: 0.9rem; margin-top: 1rem;">Scan this QR code to receive payments</p>
+                    <button id="downloadQrBtn" class="btn-primary" style="margin-top: 1rem; display: none;">Download QR</button>
+                </div>
+
+                <div class="action-section">
+                    <button id="logoutProfileBtn" class="btn-danger">Logout from Account</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:8080/api';
+        const userData = JSON.parse(sessionStorage.getItem('userData') || '{}');
+        
+        if (!userData.userId) {
+            window.location.href = 'login.html';
+        }
+
+        document.getElementById('logoutBtn').addEventListener('click', logout);
+        document.getElementById('logoutProfileBtn').addEventListener('click', logout);
+
+        function logout() {
+            sessionStorage.clear();
+            window.location.href = 'index.html';
+        }
+
+        async function loadProfile() {
+            try {
+                const userResponse = await fetch(`${API_BASE_URL}/users/${userData.userId}`);
+                const userDataResp = await userResponse.json();
+
+                if (userDataResp.success) {
+                    document.getElementById('profileName').textContent = userDataResp.fullName;
+                    document.getElementById('profileEmail').textContent = userDataResp.email;
+                    document.getElementById('profilePhone').textContent = userDataResp.phoneNumber;
+                    
+                    const createdDate = new Date(userDataResp.createdAt);
+                    document.getElementById('profileCreated').textContent = createdDate.toLocaleDateString('en-IN');
+                    
+                    const initial = userDataResp.fullName.charAt(0).toUpperCase();
+                    document.getElementById('avatarInitial').textContent = initial;
+                }
+
+                const walletResponse = await fetch(`${API_BASE_URL}/wallet/balance/${userData.userId}`);
+                const walletData = await walletResponse.json();
+
+                if (walletData.success) {
+                    document.getElementById('summaryBalance').textContent = '₹' + parseFloat(walletData.balance).toFixed(2);
+                }
+            } catch (error) {
+                console.error('Error loading profile:', error);
+            }
+        }
+
+        async function loadQRCode() {
+            try {
+                console.log('Fetching QR code for user:', userData.userId);
+                
+                const qrResponse = await fetch(`${API_BASE_URL}/users/${userData.userId}/qr`);
+                const qrData = await qrResponse.json();
+                
+                console.log('QR Response:', qrData);
+                
+                if (qrData.success && qrData.qrCode) {
+                    document.getElementById('qrCodeContainer').innerHTML = 
+                        `<img src="${qrData.qrCode}" alt="Payment QR Code" style="width: 250px; height: 250px; border-radius: 10px; border: 2px solid #667eea;">`;
+                    
+                    document.getElementById('downloadQrBtn').style.display = 'inline-block';
+                    document.getElementById('downloadQrBtn').onclick = function() {
+                        const link = document.createElement('a');
+                        link.href = qrData.qrCode;
+                        link.download = 'my-payment-qr.png';
+                        link.click();
+                    };
+                } else {
+                    document.getElementById('qrCodeContainer').innerHTML = 
+                        `<p style="color: #dc3545;">Failed to load QR Code: ${qrData.message || 'Unknown error'}</p>`;
+                }
+            } catch (error) {
+                console.error('Error loading QR code:', error);
+                document.getElementById('qrCodeContainer').innerHTML = 
+                    '<p style="color: #dc3545;">Error loading QR Code. Please refresh the page.</p>';
+            }
+        }
+
+        loadProfile();
+        loadQRCode();
+    </script>
+</body>
+</html>

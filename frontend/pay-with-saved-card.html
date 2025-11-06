@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pay with Saved Card - PayEasy</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/home.css">
+    <link rel="stylesheet" href="assets/css/transaction.css">
+</head>
+<body>
+    <div class="app-container">
+        <nav class="navbar">
+            <div class="nav-brand">
+                <a href="home.html" style="text-decoration: none; color: inherit; cursor: pointer;">
+                    <h2>💳 PayEasy</h2>
+                </a>
+            </div>
+            <div class="nav-menu">
+                <a href="home.html" class="nav-link">Home</a>
+                <a href="history.html" class="nav-link">History</a>
+                <a href="cards.html" class="nav-link">Cards</a>
+                <a href="profile.html" class="nav-link">Profile</a>
+                <button id="logoutBtn" class="btn-logout">Logout</button>
+            </div>
+        </nav>
+
+        <main class="main-content">
+            <div class="page-header">
+                <a href="cards.html" class="back-btn">← Back to Cards</a>
+                <h3>Pay with Saved Card</h3>
+            </div>
+
+            <div class="transaction-container">
+                <div class="balance-display">
+                    <p>Wallet Balance (Cashback will be added here)</p>
+                    <h2 id="availableBalance">₹0.00</h2>
+                </div>
+
+                <div class="payment-info" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 1.5rem; border-radius: 15px; margin-bottom: 2rem;">
+                    <h4 style="color: white; margin-bottom: 1rem;">Selected Card</h4>
+                    <p style="font-size: 1.2rem; margin: 0.5rem 0;"><strong id="selectedCardBrand">VISA</strong></p>
+                    <p style="font-size: 1.5rem; letter-spacing: 3px; font-family: 'Courier New', monospace;">**** **** **** <span id="selectedCardNumber">1234</span></p>
+                </div>
+
+                <form id="cardPaymentForm" class="payment-form" autocomplete="off">
+                    <div class="form-group">
+                        <label for="recipientName">Merchant/Recipient Name</label>
+                        <input type="text" id="recipientName" name="merchant-name" autocomplete="off" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="amount">Amount (₹)</label>
+                        <input type="number" id="amount" name="card-amount" min="1" autocomplete="off" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="description">Description (Optional)</label>
+                        <input type="text" id="description" name="card-desc" placeholder="What's this payment for?" autocomplete="off">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="cvv">CVV (for verification)</label>
+                        <input type="password" id="cvv" name="card-cvv" maxlength="3" placeholder="123" autocomplete="off" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="pin">Transaction PIN</label>
+                        <input type="password" id="pin" name="txn-pin-card" maxlength="4" autocomplete="new-password" required>
+                    </div>
+
+                    <div id="errorMessage" class="error-message"></div>
+
+                    <div class="swipe-container">
+                        <div class="swipe-text">Slide to Pay →</div>
+                        <div id="swipeButton" class="swipe-button">💳</div>
+                    </div>
+                </form>
+
+                <div class="payment-info" style="margin-top: 2rem;">
+                    <p style="color: #28a745; font-weight: 600;">✓ Payment will be charged to your card</p>
+                    <p style="color: #667eea; font-weight: 600;">✓ Cashback will be added to your wallet</p>
+                    <p style="color: #666;">✓ Your wallet balance will not be affected</p>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="assets/js/pay-with-saved-card.js"></script>
+</body>
+</html>

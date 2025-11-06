@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home - PayEasy</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/home.css">
+</head>
+<body>
+    <div class="app-container">
+        <nav class="navbar">
+            <div class="nav-brand">
+                <a href="home.html" style="text-decoration: none; color: inherit; cursor: pointer;">
+                    <h2>💳 PayEasy</h2>
+                </a>
+            </div>
+            <div class="nav-menu">
+                <a href="home.html" class="nav-link active">Home</a>
+                <a href="history.html" class="nav-link">History</a>
+                <a href="cards.html" class="nav-link">Cards</a>
+                <a href="profile.html" class="nav-link">Profile</a>
+                <button id="logoutBtn" class="btn-logout">Logout</button>
+            </div>
+        </nav>
+
+        <main class="main-content">
+            <div class="welcome-section">
+                <h3>Welcome, <span id="userName">User</span>! 👋</h3>
+                <p>Manage your payments and track your cashback rewards</p>
+            </div>
+
+            <div class="wallet-card">
+                <div class="wallet-header">
+                    <h4>Your Wallet Balance</h4>
+                    <button id="refreshBtn" class="btn-refresh">🔄 Refresh</button>
+                </div>
+                <div class="wallet-balance">
+                    <h2 id="walletBalance">₹0.00</h2>
+                </div>
+                <p class="wallet-info">Last updated: <span id="lastUpdated">--</span></p>
+            </div>
+
+            <div class="quick-actions">
+                <h4>Quick Actions</h4>
+                <div class="action-grid">
+                    <a href="transaction.html" class="action-card">
+                        <div class="action-icon">💸</div>
+                        <h5>Send Money</h5>
+                        <p>Pay anyone instantly</p>
+                    </a>
+                    <a href="history.html" class="action-card">
+                        <div class="action-icon">📊</div>
+                        <h5>History & Cashback</h5>
+                        <p>View transactions & rewards</p>
+                    </a>
+                    <a href="cards.html" class="action-card">
+                        <div class="action-icon">💳</div>
+                        <h5>Saved Cards</h5>
+                        <p>Manage your cards</p>
+                    </a>
+                    <a href="profile.html" class="action-card">
+                        <div class="action-icon">👤</div>
+                        <h5>Profile</h5>
+                        <p>Manage account</p>
+                    </a>
+                </div>
+            </div>
+
+            <div class="recent-transactions">
+                <div class="section-header">
+                    <h4>Recent Transactions</h4>
+                    <a href="history.html" class="view-all">View All →</a>
+                </div>
+                <div id="recentTransactionsList" class="transaction-list">
+                    <p class="no-data">Loading transactions...</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="assets/js/home.js"></script>
+</body>
+</html>

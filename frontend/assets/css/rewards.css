@@ -1,0 +1,264 @@
+/* Rewards Page Styles */
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.rewards-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.stat-box {
+    background: white;
+    padding: 2rem;
+    border-radius: 15px;
+    text-align: center;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.stat-box h4 {
+    font-size: 2.5rem;
+    color: #667eea;
+    margin-bottom: 0.5rem;
+}
+
+.stat-box p {
+    color: #666;
+    font-size: 1rem;
+}
+
+/* Filter Tabs */
+.filter-tabs {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+}
+
+.tab-btn {
+    padding: 0.8rem 2rem;
+    border: 2px solid #e0e0e0;
+    background: white;
+    border-radius: 25px;
+    cursor: pointer;
+    font-weight: 600;
+    color: #666;
+    transition: all 0.3s;
+}
+
+.tab-btn:hover {
+    border-color: #667eea;
+    color: #667eea;
+}
+
+.tab-btn.active {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-color: transparent;
+}
+
+/* Rewards Container */
+.rewards-container {
+    background: white;
+    padding: 2rem;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.rewards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+
+/* Reward Card */
+.reward-card {
+    background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
+    color: white;
+    padding: 2rem;
+    border-radius: 15px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 5px 15px rgba(255, 152, 0, 0.3);
+    transition: transform 0.3s;
+}
+
+.reward-card:hover {
+    transform: translateY(-5px);
+}
+
+.reward-card.used {
+    background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+    opacity: 0.7;
+}
+
+.reward-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    margin-bottom: 1rem;
+}
+
+.reward-icon {
+    font-size: 2.5rem;
+}
+
+.reward-badge {
+    background: rgba(255, 255, 255, 0.3);
+    padding: 0.3rem 0.8rem;
+    border-radius: 15px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.reward-card.used .reward-badge {
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.reward-content {
+    margin-bottom: 1.5rem;
+}
+
+.reward-title {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+}
+
+.reward-description {
+    font-size: 0.95rem;
+    opacity: 0.9;
+    margin-bottom: 1rem;
+}
+
+.reward-discount {
+    font-size: 2rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+}
+
+/* Coupon Code */
+.coupon-code {
+    background: rgba(255, 255, 255, 0.2);
+    border: 2px dashed white;
+    padding: 1rem;
+    border-radius: 10px;
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+.coupon-label {
+    font-size: 0.8rem;
+    opacity: 0.9;
+    margin-bottom: 0.3rem;
+}
+
+.coupon-value {
+    font-size: 1.3rem;
+    font-weight: bold;
+    letter-spacing: 2px;
+    font-family: 'Courier New', monospace;
+}
+
+/* Reward Footer */
+.reward-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.85rem;
+    opacity: 0.9;
+}
+
+.expiry-date {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+/* Use Button */
+.btn-use-reward {
+    background: white;
+    color: #ff9800;
+    padding: 0.6rem 1.5rem;
+    border: none;
+    border-radius: 20px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.3s;
+}
+
+.btn-use-reward:hover {
+    transform: scale(1.05);
+}
+
+.btn-use-reward:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Empty State */
+.no-rewards {
+    text-align: center;
+    padding: 3rem;
+    color: #999;
+}
+
+.no-rewards-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+}
+
+.no-rewards h4 {
+    font-size: 1.5rem;
+    color: #666;
+    margin-bottom: 0.5rem;
+}
+
+.no-rewards p {
+    font-size: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.no-rewards .btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 1rem 2rem;
+    border-radius: 25px;
+    text-decoration: none;
+    display: inline-block;
+    font-weight: 600;
+}
+
+/* No Data Message */
+.no-data {
+    text-align: center;
+    color: #999;
+    padding: 2rem;
+}
+
+.error-text {
+    text-align: center;
+    color: #dc3545;
+    padding: 2rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .rewards-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .filter-tabs {
+        justify-content: center;
+    }
+    
+    .tab-btn {
+        flex: 1;
+        min-width: 120px;
+    }
+}
