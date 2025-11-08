@@ -1048,12 +1048,6 @@ For complete API documentation, check the controller files in the source code.
 
 ---
 
-## 📸 Screenshots
-
-*(Add your screenshots here)*
-
----
-
 ## 🔒 Security Notes
 
 ### ⚠️ Important Disclaimer
