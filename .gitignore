@@ -4,6 +4,7 @@
 **/application.properties
 **/application-*.properties
 !**/application-template.properties
+!**/application-prod.properties
 *.env
 .env
 .env.local
@@ -86,3 +87,10 @@ tmp/
 *.tmp
 *.bak
 *.backup
+
+# ==========================================
+# DEPLOYMENT
+# ==========================================
+.netlify/
+.render/
+deployment-notes.txt
