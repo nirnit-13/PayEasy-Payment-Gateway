@@ -1,0 +1,37 @@
+# Target directory (compiled files)
+target/
+!target/payeasy-backend.jar
+
+# Maven wrapper
+.mvn/
+mvnw
+mvnw.cmd
+
+# IDE files
+../.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+
+# Logs
+*.log
+
+# Test files
+src/test/
+
+# Local configuration (contains passwords)
+src/main/resources/application.properties
+src/main/resources/application-local.properties
+
+# Keep production config
+!src/main/resources/application-prod.properties
+!src/main/resources/application-template.properties
