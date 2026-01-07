@@ -16,13 +16,10 @@
     <artifactId>payment-gateway</artifactId>
     <version>1.0.0</version>
     <name>PaymentGateway</name>
-    <description>Payment Gateway Simulation Project - Docker</description>
+    <description>Payment Gateway Simulation Project</description>
 
     <properties>
         <java.version>17</java.version>
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
     <dependencies>
@@ -80,31 +77,24 @@
     </dependencies>
 
     <build>
-        <finalName>payeasy-backend</finalName>
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
+                    <!-- Fix Java 21 warnings -->
+                    <jvmArguments>
+                        -XX:+EnableDynamicAgentLoading
+                    </jvmArguments>
                     <excludes>
                         <exclude>
                             <groupId>org.projectlombok</groupId>
                             <artifactId>lombok</artifactId>
                         </exclude>
                     </excludes>
-                    <!-- Create fully executable jar -->
-                    <executable>true</executable>
-                </configuration>
-            </plugin>
-
-            <!-- Skip tests during Docker build for faster builds -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <configuration>
-                    <skipTests>true</skipTests>
                 </configuration>
             </plugin>
         </plugins>
+        <finalName>payeasy-backend</finalName>
     </build>
 </project>
