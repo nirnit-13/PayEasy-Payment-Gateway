@@ -25,8 +25,9 @@ public class CORSConfig implements WebMvcConfigurer {
                         "http://localhost:3000",
                         // Production - Environment variable
                         frontendUrl,
-                        // Netlify pattern (allow all subdomains)
-                        "https://*.netlify.app"
+                        // Netlify patterns
+                        "https://*.netlify.app",
+                        "https://payeasy-gateway.netlify.app"
                 )
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH")
                 .allowedHeaders("*")

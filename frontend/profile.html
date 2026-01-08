@@ -6,6 +6,91 @@
     <title>Profile - PayEasy</title>
     <link rel="stylesheet" href="assets/css/style.css">
     <link rel="stylesheet" href="assets/css/home.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        .expense-chart-container {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+        
+        .expense-chart-container h4 {
+            margin-bottom: 1.5rem;
+            color: #333;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .chart-wrapper {
+            position: relative;
+            height: 300px;
+            margin-bottom: 1rem;
+        }
+        
+        .chart-controls {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+        
+        .chart-btn {
+            padding: 0.5rem 1.5rem;
+            border: 2px solid #e0e0e0;
+            background: white;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            color: #666;
+            transition: all 0.3s;
+        }
+        
+        .chart-btn:hover {
+            border-color: #667eea;
+            color: #667eea;
+        }
+        
+        .chart-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: transparent;
+        }
+        
+        .expense-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+        
+        .expense-stat-item {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .expense-stat-item p {
+            color: #666;
+            font-size: 0.85rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .expense-stat-item h4 {
+            color: #667eea;
+            font-size: 1.3rem;
+            margin: 0;
+        }
+        
+        .no-data-chart {
+            text-align: center;
+            padding: 3rem;
+            color: #999;
+        }
+    </style>
 </head>
 <body>
     <div class="app-container">
@@ -62,7 +147,45 @@
                     <div class="summary-grid">
                         <div class="summary-item">
                             <p>Current Balance</p>
-                            <h3 id="summaryBalance">₹0.00</h3>
+                            <h3 id="summaryBalance">Rs. 0.00</h3>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Expense Tracking Chart -->
+                <div class="expense-chart-container">
+                    <h4>
+                        <span>Expense Analytics</span>
+                    </h4>
+                    
+                    <div class="chart-controls">
+                        <button class="chart-btn active" onclick="changeChartView('7days')" data-view="7days">Last 7 Days</button>
+                        <button class="chart-btn" onclick="changeChartView('30days')" data-view="30days">Last 30 Days</button>
+                        <button class="chart-btn" onclick="changeChartView('monthly')" data-view="monthly">Monthly</button>
+                    </div>
+                    
+                    <div id="chartContainer">
+                        <div class="chart-wrapper">
+                            <canvas id="expenseChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="expense-stats">
+                        <div class="expense-stat-item">
+                            <p>Total Spent</p>
+                            <h4 id="totalSpent">Rs. 0</h4>
+                        </div>
+                        <div class="expense-stat-item">
+                            <p>Avg. Transaction</p>
+                            <h4 id="avgTransaction">Rs. 0</h4>
+                        </div>
+                        <div class="expense-stat-item">
+                            <p>Total Cashback</p>
+                            <h4 id="totalCashback" style="color: #28a745;">Rs. 0</h4>
+                        </div>
+                        <div class="expense-stat-item">
+                            <p>Transactions</p>
+                            <h4 id="transactionCount">0</h4>
                         </div>
                     </div>
                 </div>
@@ -90,6 +213,10 @@
         if (!userData.userId) {
             window.location.href = 'login.html';
         }
+
+        let expenseChart = null;
+        let currentView = '7days';
+        let allTransactions = [];
 
         document.getElementById('logoutBtn').addEventListener('click', logout);
         document.getElementById('logoutProfileBtn').addEventListener('click', logout);
@@ -120,25 +247,218 @@
                 const walletData = await walletResponse.json();
 
                 if (walletData.success) {
-                    document.getElementById('summaryBalance').textContent = '₹' + parseFloat(walletData.balance).toFixed(2);
+                    document.getElementById('summaryBalance').textContent = 'Rs. ' + parseFloat(walletData.balance).toFixed(2);
                 }
             } catch (error) {
                 console.error('Error loading profile:', error);
             }
         }
 
+        async function loadTransactions() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/transactions/history/${userData.userId}`);
+                const data = await response.json();
+                
+                if (data.success && data.transactions && data.transactions.length > 0) {
+                    allTransactions = data.transactions;
+                    updateExpenseChart();
+                } else {
+                    showNoDataChart();
+                }
+            } catch (error) {
+                console.error('Error loading transactions:', error);
+                showNoDataChart();
+            }
+        }
+
+        function showNoDataChart() {
+            const container = document.getElementById('chartContainer');
+            container.innerHTML = `
+                <div class="no-data-chart">
+                    <p style="font-size: 3rem;">📊</p>
+                    <h4 style="color: #666; margin-bottom: 0.5rem;">No Transaction Data</h4>
+                    <p>Make your first payment to see expense analytics</p>
+                </div>
+            `;
+        }
+
+        function updateExpenseChart() {
+            if (allTransactions.length === 0) {
+                showNoDataChart();
+                return;
+            }
+
+            const processedData = processTransactionData(allTransactions, currentView);
+            
+            // Update stats
+            document.getElementById('totalSpent').textContent = 'Rs. ' + processedData.totalSpent.toFixed(0);
+            document.getElementById('avgTransaction').textContent = 'Rs. ' + processedData.avgTransaction.toFixed(0);
+            document.getElementById('totalCashback').textContent = 'Rs. ' + processedData.totalCashback.toFixed(0);
+            document.getElementById('transactionCount').textContent = processedData.transactionCount;
+
+            // Create or update chart
+            if (expenseChart) {
+                expenseChart.destroy();
+            }
+
+            const ctx = document.getElementById('expenseChart').getContext('2d');
+            expenseChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: processedData.labels,
+                    datasets: [{
+                        label: 'Amount Spent (Rs.)',
+                        data: processedData.amounts,
+                        backgroundColor: 'rgba(102, 126, 234, 0.8)',
+                        borderColor: 'rgba(102, 126, 234, 1)',
+                        borderWidth: 2,
+                        borderRadius: 8,
+                    }, {
+                        label: 'Cashback Earned (Rs.)',
+                        data: processedData.cashbacks,
+                        backgroundColor: 'rgba(40, 167, 69, 0.8)',
+                        borderColor: 'rgba(40, 167, 69, 1)',
+                        borderWidth: 2,
+                        borderRadius: 8,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top',
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': Rs. ' + context.parsed.y.toFixed(2);
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return 'Rs. ' + value;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function processTransactionData(transactions, view) {
+            const now = new Date();
+            let labels = [];
+            let amounts = [];
+            let cashbacks = [];
+            let filteredTransactions = [];
+
+            if (view === '7days') {
+                for (let i = 6; i >= 0; i--) {
+                    const date = new Date(now);
+                    date.setDate(date.getDate() - i);
+                    labels.push(date.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }));
+                    
+                    const dayTransactions = transactions.filter(t => {
+                        const txnDate = new Date(t.transactionDate);
+                        return txnDate.toDateString() === date.toDateString();
+                    });
+                    
+                    filteredTransactions.push(...dayTransactions);
+                    
+                    const dayAmount = dayTransactions.reduce((sum, t) => sum + parseFloat(t.amount), 0);
+                    const dayCashback = dayTransactions.reduce((sum, t) => sum + parseFloat(t.cashback), 0);
+                    
+                    amounts.push(dayAmount);
+                    cashbacks.push(dayCashback);
+                }
+            } else if (view === '30days') {
+                for (let i = 4; i >= 0; i--) {
+                    const startDate = new Date(now);
+                    startDate.setDate(startDate.getDate() - (i * 7 + 6));
+                    const endDate = new Date(now);
+                    endDate.setDate(endDate.getDate() - (i * 7));
+                    
+                    labels.push('Week ' + (5-i));
+                    
+                    const weekTransactions = transactions.filter(t => {
+                        const txnDate = new Date(t.transactionDate);
+                        return txnDate >= startDate && txnDate <= endDate;
+                    });
+                    
+                    filteredTransactions.push(...weekTransactions);
+                    
+                    const weekAmount = weekTransactions.reduce((sum, t) => sum + parseFloat(t.amount), 0);
+                    const weekCashback = weekTransactions.reduce((sum, t) => sum + parseFloat(t.cashback), 0);
+                    
+                    amounts.push(weekAmount);
+                    cashbacks.push(weekCashback);
+                }
+            } else if (view === 'monthly') {
+                for (let i = 5; i >= 0; i--) {
+                    const date = new Date(now);
+                    date.setMonth(date.getMonth() - i);
+                    labels.push(date.toLocaleDateString('en-IN', { month: 'short', year: '2-digit' }));
+                    
+                    const monthTransactions = transactions.filter(t => {
+                        const txnDate = new Date(t.transactionDate);
+                        return txnDate.getMonth() === date.getMonth() && 
+                               txnDate.getFullYear() === date.getFullYear();
+                    });
+                    
+                    filteredTransactions.push(...monthTransactions);
+                    
+                    const monthAmount = monthTransactions.reduce((sum, t) => sum + parseFloat(t.amount), 0);
+                    const monthCashback = monthTransactions.reduce((sum, t) => sum + parseFloat(t.cashback), 0);
+                    
+                    amounts.push(monthAmount);
+                    cashbacks.push(monthCashback);
+                }
+            }
+
+            const totalSpent = filteredTransactions.reduce((sum, t) => sum + parseFloat(t.amount), 0);
+            const totalCashback = filteredTransactions.reduce((sum, t) => sum + parseFloat(t.cashback), 0);
+            const transactionCount = filteredTransactions.length;
+            const avgTransaction = transactionCount > 0 ? totalSpent / transactionCount : 0;
+
+            return {
+                labels,
+                amounts,
+                cashbacks,
+                totalSpent,
+                totalCashback,
+                transactionCount,
+                avgTransaction
+            };
+        }
+
+        function changeChartView(view) {
+            currentView = view;
+            
+            document.querySelectorAll('.chart-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector('[data-view="' + view + '"]').classList.add('active');
+            
+            updateExpenseChart();
+        }
+
+        window.changeChartView = changeChartView;
+
         async function loadQRCode() {
             try {
-                console.log('Fetching QR code for user:', userData.userId);
-                
                 const qrResponse = await fetch(`${API_BASE_URL}/users/${userData.userId}/qr`);
                 const qrData = await qrResponse.json();
                 
-                console.log('QR Response:', qrData);
-                
                 if (qrData.success && qrData.qrCode) {
                     document.getElementById('qrCodeContainer').innerHTML = 
-                        `<img src="${qrData.qrCode}" alt="Payment QR Code" style="width: 250px; height: 250px; border-radius: 10px; border: 2px solid #667eea;">`;
+                        '<img src="' + qrData.qrCode + '" alt="Payment QR Code" style="width: 250px; height: 250px; border-radius: 10px; border: 2px solid #667eea;">';
                     
                     document.getElementById('downloadQrBtn').style.display = 'inline-block';
                     document.getElementById('downloadQrBtn').onclick = function() {
@@ -149,16 +469,17 @@
                     };
                 } else {
                     document.getElementById('qrCodeContainer').innerHTML = 
-                        `<p style="color: #dc3545;">Failed to load QR Code: ${qrData.message || 'Unknown error'}</p>`;
+                        '<p style="color: #dc3545;">Failed to load QR Code</p>';
                 }
             } catch (error) {
                 console.error('Error loading QR code:', error);
                 document.getElementById('qrCodeContainer').innerHTML = 
-                    '<p style="color: #dc3545;">Error loading QR Code. Please refresh the page.</p>';
+                    '<p style="color: #dc3545;">Error loading QR Code</p>';
             }
         }
 
         loadProfile();
+        loadTransactions();
         loadQRCode();
     </script>
 </body>

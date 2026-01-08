@@ -1,0 +1,36 @@
+# ==========================================
+# Render Deployment Configuration (Docker)
+# ==========================================
+# Location: render.yaml (project root)
+
+services:
+  # Backend Web Service
+  - type: web
+    name: payeasy-backend
+    env: docker
+    region: oregon  # Choose: oregon, frankfurt, singapore, ohio
+    plan: free
+    dockerfilePath: ./backend/payment-gateway/Dockerfile
+    dockerContext: ./backend/payment-gateway
+    healthCheckPath: /actuator/health
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+      - key: DATABASE_URL
+        sync: false  # Set manually in Render dashboard
+      - key: DATABASE_USERNAME
+        sync: false  # Set manually in Render dashboard
+      - key: DATABASE_PASSWORD
+        sync: false  # Set manually in Render dashboard
+      - key: FRONTEND_URL
+        sync: false  # Set after Netlify deployment
+
+# ==========================================
+# Deployment Notes:
+# 1. Push this file to your GitHub repo root
+# 2. Render will auto-detect and use this config
+# 3. Set environment variables in Render dashboard
+# 4. First build takes 5-10 minutes
+# ==========================================
